@@ -1,0 +1,19 @@
+
+1. Initialization:
+The election is initiated by a process that starts the message circulation. 
+The initiator sends an election message containing its own ID to the next process in the ring.
+
+2. Message Passing:
+Each process receives the message and compares the ID in the message with its own. 
+If the process has a higher ID, it replaces the ID in the message with its own and forwards it to the next process in the ring. 
+Otherwise, it simply forwards the message.
+
+3. Leader Determination:
+Once the message has traveled around the entire ring and returned to the initiator, 
+the process that holds the highest ID in the message is declared the leader.
+
+4. Leader Announcement:
+The process with the highest ID announces itself as the leader to all other processes in the ring.
+
+5. Failure Handling:
+If the leader process fails, any process can initiate a new election following the same steps.
