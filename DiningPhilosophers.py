@@ -1,42 +1,46 @@
-import threading
 import time
+import threading
 
-# Number of philosophers and forks
-N = 5  
-
-# Create a list of locks to represent forks
+N = 5
 forks = []
+mutex = threading.Semaphore(1)
+
 for _ in range(N):
-    forks.append(threading.Lock())  # Each fork is represented by a threading.Lock
+    forks.append(threading.Lock())
 
-def philosopher(id):
-    for _ in range(3):  # Each philosopher repeats the process of THINKING, HUNGRY, and EATING three times
-        print(f"Philosopher {id} is THINKING.")  
-        time.sleep(1)  
+def philosopher(index):
+    while True:
+        print(f"Philosopher {index} is thinking...")
+        time.sleep(2)
 
-        print(f"Philosopher {id} is HUNGRY.")  # Philosopher transitions to the HUNGRY state
+        print(f"Philosopher {index} is hungry...")
 
-        # Determine the order of picking up forks
-        if id % 2 == 0:  # Even-numbered philosophers pick their left fork first
-            first, second = id, (id + 1) % N
-        else:  # Odd-numbered philosophers pick their right fork first
-            first, second = (id + 1) % N, id
+        mutex.acquire()
 
-        # Acquire both forks (locks) using the determined order
-        with forks[first], forks[second]:
-            print(f"Philosopher {id} is EATING.")  # Philosopher transitions to the EATING state
-            time.sleep(2)  # Simulate eating time
+        left_fork_index = index
+        right_fork_index = (index + 1) % N
 
-        print(f"Philosopher {id} finished EATING.")  # Philosopher finishes eating
+        forks[left_fork_index].acquire()
+        forks[right_fork_index].acquire()
 
-# Create and start threads for each philosopher
+
+        print(f"Philosopher {index} is eating...")
+        time.sleep(2)
+
+        forks[left_fork_index].release()
+        forks[right_fork_index].release()
+        
+        mutex.release()
+
 threads = []
-for i in range(N):  # Create a thread for each philosopher
+
+for i in range(N):
     t = threading.Thread(target=philosopher, args=(i,))
-    threads.append(t)  # Add the thread to the list
+    threads.append(t)
 
 for t in threads:
-    t.start()  # Start each thread
+    t.start()
 
 for t in threads:
-    t.join()  # Wait for all threads to finish
+    t.join()
+
